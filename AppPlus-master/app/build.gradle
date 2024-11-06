@@ -1,0 +1,174 @@
+/*
+ *     Copyright (c) 2015 GuDong
+ *
+ *     Permission is hereby granted, free of charge, to any person obtaining a copy
+ *     of this software and associated documentation files (the "Software"), to deal
+ *     in the Software without restriction, including without limitation the rights
+ *     to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ *     copies of the Software, and to permit persons to whom the Software is
+ *     furnished to do so, subject to the following conditions:
+ *
+ *     The above copyright notice and this permission notice shall be included in all
+ *     copies or substantial portions of the Software.
+ *
+ *     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ *     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ *     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ *     AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ *     LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ *     OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ *     SOFTWARE.
+ */
+
+apply plugin: 'com.android.application'
+
+def releaseTime() {
+    return new Date().format("yyyy-MM-dd", TimeZone.getTimeZone("UTC"))
+}
+
+android {
+    compileSdkVersion Integer.parseInt(project.ANDROID_COMPILE_SDK_VERSION)
+    buildToolsVersion project.ANDROID_BUILD_TOOLS_VERSION
+
+    defaultConfig {
+        applicationId project.GROUP
+        minSdkVersion Integer.parseInt(project.ANDROID_BUILD_SDK_MIN_VERSION)
+        targetSdkVersion Integer.parseInt(project.ANDROID_BUILD_TARGET_SDK_VERSION)
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        versionName project.VERSION_NAME
+        //当前项目是不是出于 Debug 模式
+
+        buildConfigField "Boolean", "IS_DEBUG", "true"
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    signingConfigs {
+        release
+    }
+
+    buildTypes {
+        release {
+            //set for is proguard or not
+            minifyEnabled false
+            zipAlignEnabled true
+            // remove useless resource file
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            if (signingConfigs.release != null) {
+                signingConfig signingConfigs.release
+            }
+
+            //set the output file name
+            applicationVariants.all { variant ->
+                variant.outputs.each { output ->
+                    def outputFile = output.outputFile
+                    if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                        // the name is AppPlus_v1.0_2015-01-15_wandoujia.apk
+                        def fileName = "AppPlus_v${defaultConfig.versionName}_${releaseTime()}_${variant.productFlavors[0].name}.apk"
+                        output.outputFile = new File(outputFile.parent, fileName)
+                    }
+                }
+            }
+            buildConfigField "Boolean", "IS_DEBUG", "false"
+        }
+        debug {
+            if (signingConfigs.release != null) {
+                signingConfig signingConfigs.release
+            }
+            //设置压缩对齐
+            zipAlignEnabled true
+            //移除无用的资源文件
+            shrinkResources false
+            //设置是否混淆
+            minifyEnabled false
+            //设置混淆配置文件
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        beta {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE:"beta"]
+        }
+        xiaomi {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE:"xiaomi"]
+        }
+        m360 {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE:"m360"]
+        }
+        wandoujia {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "wandoujia"]
+        }
+        fir {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "fir"]
+        }
+        umeng {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "umeng"]
+        }
+        play {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "play"]
+        }
+        coolapk {
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "coolapk"]
+        }
+    }
+}
+
+//set release sign info synchronously
+def Properties props = new Properties()
+def propFile = file('signing.properties')
+if (propFile.canRead()) {
+    props.load(new FileInputStream(propFile))
+    if (props != null &&
+            props.containsKey('SIGN_FILE') && props.containsKey('SIGN_KEYSTORE_PASS') &&
+            props.containsKey('SIGN_KEYSTORE_ALIAS') && props.containsKey('SIGN_KEYSTORE_ALIAS_PASS')) {
+        println 'release build signing'
+        android.signingConfigs.release.storeFile = file(props['SIGN_FILE'])
+        android.signingConfigs.release.storePassword = props['SIGN_KEYSTORE_PASS']
+        android.signingConfigs.release.keyAlias = props['SIGN_KEYSTORE_ALIAS']
+        android.signingConfigs.release.keyPassword = props['SIGN_KEYSTORE_ALIAS_PASS']
+    } else {
+        println 'release build not found signing properties'
+        android.buildTypes.release.signingConfig = null
+    }
+} else {
+    println 'release build not found signing file'
+    android.buildTypes.release.signingConfig = null
+}
+
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Google
+    compile "com.android.support:recyclerview-v7:${project.ANDROID_SUPPORT_VERSION}"
+    compile "com.android.support:appcompat-v7:${project.ANDROID_SUPPORT_VERSION}"
+    compile "com.android.support:design:${project.ANDROID_SUPPORT_VERSION}"
+    compile "com.android.support:gridlayout-v7:${project.ANDROID_SUPPORT_VERSION}"
+    compile "com.android.support:percent:${project.ANDROID_SUPPORT_VERSION}"
+
+    // Reactivex
+    compile 'io.reactivex:rxjava:1.0.1'
+    compile 'io.reactivex:rxandroid:1.0.1'
+
+    // Other
+    compile 'com.jenzz:materialpreference:1.3'
+    compile 'com.readystatesoftware.systembartint:systembartint:1.0.3'
+    compile 'com.umeng.analytics:analytics:latest.integration'
+    compile 'com.jaredrummler:android-processes:1.0.9'
+    compile 'jp.wasabeef:recyclerview-animators:2.1.0'
+    compile 'com.jaredrummler:apk-parser:1.0.2'
+    //A small Android library to manage one-off operations.
+    compile 'com.jonathanfinerty.once:once:1.0.3'
+    compile project(':library')
+    compile 'com.github.maoruibin:ViewController:0.9.0'
+    compile "moe.feng:AlipayZeroSdk:1.1"
+}
+
+task showMeCache << {
+    configurations.compile.each { println it }
+}

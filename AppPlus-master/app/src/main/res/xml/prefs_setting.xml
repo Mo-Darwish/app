@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.jenzz.materialpreference.PreferenceCategory
+        android:key="@string/category_advanced_key"
+        android:title="@string/category_advanced">
+
+        <com.jenzz.materialpreference.SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/switch_preference_key_show_self"
+            android:summary="@string/switch_preference_show_self_on"
+            android:title="@string/switch_preference_show_self_title"/>
+
+        <com.jenzz.materialpreference.SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/switch_preference_key_list_item_brief_mode"
+            android:summary="@string/switch_preference_list_item_brief_mode_on"
+            android:title="@string/switch_preference_list_item_brief_mode"/>
+
+        <com.jenzz.materialpreference.Preference
+            android:key="@string/preference_key_theme_primary"
+            android:summary="@string/preference_summary_theme_primary"
+            android:title="@string/preference_title_theme_primary"/>
+    </com.jenzz.materialpreference.PreferenceCategory>
+    <com.jenzz.materialpreference.PreferenceCategory
+        android:title="@string/action_wechat_helper">
+        <com.jenzz.materialpreference.SwitchPreference
+            android:key="@string/preference_key_wechat_helper_auto_check"
+            android:defaultValue="false"
+            android:summary="@string/preference_summary_wechat_helper_auto_check"
+            android:title="@string/preference_title_wechat_helper_auto_check"/>
+
+        <com.jenzz.materialpreference.Preference
+            android:key="@string/preference_key_wechat_helper"
+            android:title="@string/preference_title_wechat_helper"/>
+
+        <com.jenzz.materialpreference.Preference
+            android:key="@string/preference_key_open_wechat_download"
+            android:title="@string/preference_title_open_wechat_download"/>
+    </com.jenzz.materialpreference.PreferenceCategory>
+</PreferenceScreen>
