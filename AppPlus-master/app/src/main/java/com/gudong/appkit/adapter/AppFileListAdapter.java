@@ -51,7 +51,7 @@ import java.util.List;
 /**
  * Created by mao on 15/7/8.
  */
-public class AppFileListAdapter extends RecyclerView.Adapter<AppFileListAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener {
+public class AppFileListAdapter extends BaseAppAdapter<AppFileListAdapter.ViewHolder> implements View.OnClickListener, View.OnLongClickListener {
     private List<AppEntity> mListData;
     private final TypedValue mTypedValue = new TypedValue();
     private int mBackground;
@@ -83,23 +83,20 @@ public class AppFileListAdapter extends RecyclerView.Adapter<AppFileListAdapter.
            notifyDataSetChanged();
        }
     }
-
-    public void clear(){
-        notifyItemRangeRemoved(0,mListData.size());
-        this.mListData.clear();
+  // Use inherited clear method from BaseAppAdapter
+    public void update(List<AppEntity> listData) {
+        clear();
+        mListData.addAll(listData);
     }
 
-    public void addItem(int position,AppEntity entity){
-        this.mListData.add(position,entity);
-        notifyItemInserted(position);
+    // Use inherited addItem method from BaseAppAdapter
+    public void addAppEntity(int position, AppEntity entity) {
+        addItem(position, entity);
     }
 
-    public void removeItem(AppEntity entity){
-        int position = mListData.indexOf(entity);
-        if(position >=0 ){
-            this.mListData.remove(position);
-            notifyItemRemoved(position);
-        }
+    // Use inherited removeItem method from BaseAppAdapter
+    public void deleteAppEntity(AppEntity entity) {
+        removeItem(entity);
     }
 
     @Override
